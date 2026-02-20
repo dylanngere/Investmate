@@ -5,6 +5,8 @@ import sys
 import pandas as pd
 import requests
 from currency_symbols import CurrencySymbols
+from dotenv import load_dotenv
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import yfinance as yf
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QStackedWidget, QFrame, QComboBox, QScrollArea
@@ -18,6 +20,9 @@ from urllib.request import urlopen
 # Import custom screen classes for stock and search functionality.
 from stock_screen import StockScreen    
 from search_screen import SearchScreen
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Custom scroll area class that allows independent scrolling behavior.
 class IndependentScrollArea(QScrollArea):
@@ -84,7 +89,8 @@ class invest_mate(QMainWindow):
         Fetches the latest currency conversion rate from an external API and updates the currency_rate attribute.
         """
         try:
-            response = requests.get(f"https://api.fxratesapi.com/latest?base=USD&currencies={self.currency}&resolution=1m&format=json&api_key=fxr_live_7010b67c899d4b2431d1570922882cea7a71")
+            fx_api_key = os.getenv('FX_RATES_API_KEY')
+            response = requests.get(f"https://api.fxratesapi.com/latest?base=USD&currencies={self.currency}&resolution=1m&format=json&api_key={fx_api_key}")
             data = response.json()
             self.currency_rate = data['rates'][self.currency]
             self.currency_rate_last_updated = dt.datetime.now()
@@ -402,7 +408,8 @@ class invest_mate(QMainWindow):
         Fetches trending stocks data from an API.
         """
         stock_list = []
-        data = requests.get(f"https://financialmodelingprep.com/stable/biggest-gainers?apikey=VduHZiIZDCrCdGaKsNQVTL4Xq9V09Fpj").json()
+        fmp_api_key = os.getenv('FINANCIAL_MODELING_PREP_API_KEY')
+        data = requests.get(f"https://financialmodelingprep.com/stable/biggest-gainers?apikey={fmp_api_key}").json()
         for stock in data:
             if "Inc." in stock["name"]:
                 stock_list.append(stock)
@@ -442,7 +449,8 @@ class invest_mate(QMainWindow):
             company_logo_layout = QVBoxLayout()
             company_logo_widget.setLayout(company_logo_layout)
             stock_rectangle_layout.addWidget(company_logo_widget)
-            logo = requests.get(f"https://img.logo.dev/ticker/{asset['symbol']}?token=pk_aWD-Vuk_T16mdpja9LP3Ug&size=64&retina=true")
+            logo_token = os.getenv('LOGO_DEV_TOKEN')
+            logo = requests.get(f"https://img.logo.dev/ticker/{asset['symbol']}?token={logo_token}&size=64&retina=true")
             logo_image = QPixmap()
             logo_image.loadFromData(logo.content)
             logo_image = logo_image.scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -891,7 +899,8 @@ class invest_mate(QMainWindow):
 
         for symbol in grouped_holdings:
             try:
-                data = requests.get(f"https://finnhub.io/api/v1/search?q={symbol}&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0")
+                finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+                data = requests.get(f"https://finnhub.io/api/v1/search?q={symbol}&token={finnhub_api_key}")
                 result = data.json()
 
                  # WILL change
@@ -1058,7 +1067,8 @@ class invest_mate(QMainWindow):
             asset_widget.setStyleSheet("background-color: #262626; border-radius: 7px; padding 4px;")
             asset_widget.setFixedHeight(90)
             self.assets_layout.addWidget(asset_widget)
-            logo = requests.get(f"https://img.logo.dev/ticker/{holding[1]}?token=pk_aWD-Vuk_T16mdpja9LP3Ug&size=64&retina=true")
+            logo_token = os.getenv('LOGO_DEV_TOKEN')
+            logo = requests.get(f"https://img.logo.dev/ticker/{holding[1]}?token={logo_token}&size=64&retina=true")
             logo_image = QPixmap()
             logo_image.loadFromData(logo.content)
             logo_image = logo_image.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -1235,7 +1245,8 @@ class invest_mate(QMainWindow):
         Fetches trending news data from an API.
         """
         try:
-            data = requests.get(f"https://newsapi.org/v2/everything?q=stock&sortBy=popularity&apiKey=1befde84b37c43eea867bf08b3893b1a")
+            news_api_key = os.getenv('NEWS_API_KEY')
+            data = requests.get(f"https://newsapi.org/v2/everything?q=stock&sortBy=popularity&apiKey={news_api_key}")
             response = data.json()
             return response['articles'][:3]
         except requests.RequestException as e:

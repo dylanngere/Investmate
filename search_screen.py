@@ -10,6 +10,11 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import yfinance as yf
 from PyQt6.QtGui import QFont, QPixmap, QDesktopServices
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Custom canvas for displaying sparklines (mini charts).
 class SparklineCanvas(FigureCanvas):
@@ -51,8 +56,9 @@ class StockSearchWorker(QThread):
         """
         self.set_loading_cursor(True)
         try:
+            finnhub_api_key = os.getenv('FINNHUB_API_KEY')
             data = requests.get(
-                f"https://finnhub.io/api/v1/search?q={self.query}&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0",
+                f"https://finnhub.io/api/v1/search?q={self.query}&token={finnhub_api_key}",
                 timeout=5
             )
             if data.status_code == 200:
@@ -299,7 +305,8 @@ class SearchScreen(QtWidgets.QWidget):
         Loads news articles based on the query.
         """
         try:
-            data = requests.get(f"https://newsapi.org/v2/everything?q={query}-stock&sortBy=popularity&apiKey=1befde84b37c43eea867bf08b3893b1a")
+            news_api_key = os.getenv('NEWS_API_KEY')
+            data = requests.get(f"https://newsapi.org/v2/everything?q={query}-stock&sortBy=popularity&apiKey={news_api_key}")
             response = data.json()
 
             return response['articles'][:20]
@@ -312,7 +319,8 @@ class SearchScreen(QtWidgets.QWidget):
         Searches for news based on the input query.
         """
         try:
-            data = requests.get(f"https://newsapi.org/v2/everything?q={self.search_label_input.text()}-stock&sortBy=popularity&apiKey=1befde84b37c43eea867bf08b3893b1a")
+            news_api_key = os.getenv('NEWS_API_KEY')
+            data = requests.get(f"https://newsapi.org/v2/everything?q={self.search_label_input.text()}-stock&sortBy=popularity&apiKey={news_api_key}")
             response = data.json()
             
             self.news_section_layout.removeWidget(self.news_items_container)

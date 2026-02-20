@@ -10,6 +10,10 @@ import requests
 import yfinance as yf
 import os
 from tkinter import messagebox
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # with open('chart.html', 'r', encoding='utf-8') as f:
@@ -40,7 +44,8 @@ class BarChartWidget(QWidget):
         Fetches analyst recommendation data and plots the bar chart.
         """
         try:
-            response = requests.get(f"https://finnhub.io/api/v1/stock/recommendation?symbol={self.stock}&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0")
+            finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+            response = requests.get(f"https://finnhub.io/api/v1/stock/recommendation?symbol={self.stock}&token={finnhub_api_key}")
             data = response.json()[0]
             values = [data['strongSell'], data['sell'], data['hold'], data['buy'], data['strongBuy']]
 
@@ -115,7 +120,8 @@ class StockScreen(QWidget):
         """
         self.stock = stock
 
-        data = requests.get(f"https://financialmodelingprep.com/stable/profile?symbol={self.stock[0]}&apikey=VduHZiIZDCrCdGaKsNQVTL4Xq9V09Fpj").json()
+        fmp_api_key = os.getenv('FINANCIAL_MODELING_PREP_API_KEY')
+        data = requests.get(f"https://financialmodelingprep.com/stable/profile?symbol={self.stock[0]}&apikey={fmp_api_key}").json()
         self.description = data[0]['description']
         self.category = data[0]['industry']
         self.update_display()
@@ -211,7 +217,8 @@ class StockScreen(QWidget):
         """
         # Placeholder for actual stock data retrieval logic
         self.ticker = self.stock[0]
-        name = requests.get(f"https://finnhub.io/api/v1/search?q={self.ticker}&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0",).json()['result'][0]['description']
+        finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+        name = requests.get(f"https://finnhub.io/api/v1/search?q={self.ticker}&token={finnhub_api_key}",).json()['result'][0]['description']
         self.stock_name = name.replace("Inc A", "")
         self.price = self.get_current_price(self.ticker)
         self.units = self.stock[1]
@@ -230,7 +237,8 @@ class StockScreen(QWidget):
         self.top_section.setLayout(self.top_layout)
         self.stock_info_layout_left.addWidget(self.top_section)
 
-        logo = requests.get(f"https://img.logo.dev/ticker/{self.ticker}?token=pk_aWD-Vuk_T16mdpja9LP3Ug&size=64&retina=true")
+        logo_token = os.getenv('LOGO_DEV_TOKEN')
+        logo = requests.get(f"https://img.logo.dev/ticker/{self.ticker}?token={logo_token}&size=64&retina=true")
         logo_image = QPixmap()
         logo_image.loadFromData(logo.content)
         logo_image = logo_image.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -341,7 +349,8 @@ class StockScreen(QWidget):
         self.bottom_left_section.setLayout(self.bottom_left_layout)
         self.bottom_layout.addWidget(self.bottom_left_section)
         
-        data = requests.get(f"https://finnhub.io/api/v1/stock/metric?symbol={self.ticker}&metric=all&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0").json()
+        finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+        data = requests.get(f"https://finnhub.io/api/v1/stock/metric?symbol={self.ticker}&metric=all&token={finnhub_api_key}").json()
 
         if len(data['metric']) == 0:
             no_data_label = QLabel("No metric data available.")
@@ -554,7 +563,8 @@ class StockScreen(QWidget):
 
         self.stock_container_layout.addSpacing(20)
 
-        response = requests.get(f"https://finnhub.io/api/v1/stock/filings?symbol={self.ticker}&token=cmqq3ohr01ql2lmsr5fgcmqq3ohr01ql2lmsr5g0")
+        finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+        response = requests.get(f"https://finnhub.io/api/v1/stock/filings?symbol={self.ticker}&token={finnhub_api_key}")
         data = response.json()
 
         for record in data[:20]:
