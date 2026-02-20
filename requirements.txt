@@ -1,0 +1,7 @@
+pandas>=1.3.0
+requests>=2.25.0
+currency-symbols>=2.0.0
+yfinance>=0.1.63
+PyQt6>=6.2.0
+lightweight-charts>=1.0.0
+matplotlib>=3.4.0
